@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f3f4f6">
+    <meta name="description"
+        content="Nötr-Zihin: Bulanık mantık ve yapay sinir ağı ile akıllı duygu kontrolü ve sağlık takibi">
+    <title>Nötr-Zihin · Akıllı Sağlık</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+    <div class="app-container" role="main">
+        <!-- Dashboard Screen -->
+        <div id="dashboard" class="screen active" role="region" aria-label="Ana Sayfa">
+            <div class="header header-blue">
+                <div class="header-title">Merhaba, Fatma</div>
+                <div class="header-subtitle">Bugün nasıl hissediyorsun?</div>
+            </div>
+
+            <div class="card" style="text-align: center; margin-top: -20px; position: relative; z-index: 10;">
+                <div class="card-title"><i class="ph ph-heartbeat" style="color: var(--success)"></i> Günlük Denge</div>
+                <div class="coherence-circle">
+                    <div class="coherence-value">72</div>
+                    <div class="coherence-label">Koherans</div>
+                </div>
+                <div class="coherence-status"><i class="ph ph-check-circle"></i> Dengeli Durum</div>
+                <canvas id="dashboard-mood-chart" style="width:100%;height:60px;margin-top:15px;"
+                    aria-label="Ruh hali grafiği"></canvas>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Hızlı Başlat</div>
+            </div>
+
+            <div class="action-grid">
+                <button class="action-button blue-btn" onclick="switchScreen('breathing')" aria-label="Nefes Egzersizi">
+                    <div class="action-icon"><i class="ph ph-wind"></i></div>
+                    <div class="action-text">Nefes</div>
+                </button>
+                <button class="action-button green-btn" onclick="switchScreen('hrv')" aria-label="HRV Ölçümü">
+                    <div class="action-icon"><i class="ph ph-heart"></i></div>
+                    <div class="action-text">HRV Ölç</div>
+                </button>
+                <button class="action-button purple-btn" onclick="switchScreen('emotion')" aria-label="Duygu Günlüğü">
+                    <div class="action-icon"><i class="ph ph-smiley"></i></div>
+                    <div class="action-text">Duygu</div>
+                </button>
+                <button class="action-button orange-btn" onclick="switchScreen('decision')" aria-label="Karar Desteği">
+                    <div class="action-icon"><i class="ph ph-scales"></i></div>
+                    <div class="action-text">Karar</div>
+                </button>
+                <button class="action-button"
+                    style="grid-column: span 2; background: linear-gradient(135deg, #1e293b, #0f172a); color: white;"
+                    onclick="switchScreen('neutral')" aria-label="Nötr-Zihin AI">
+                    <div class="action-icon"><i class="ph ph-brain"></i></div>
+                    <div class="action-text">Nötr-Zihin AI</div>
+                </button>
+            </div>
+
+            <div class="stats-card" role="group" aria-label="İstatistikler">
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Egzersiz</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Ölçüm</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Kayıt</div>
+                </div>
+            </div>
+
+            <div class="streak-card">
+                <div class="streak-icon">🔥</div>
+                <div class="streak-content">
+                    <div class="streak-text"><span id="streak-count">0</span> Gün Serisi!</div>
+                    <div class="streak-subtext">Harika gidiyorsun, devam et!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HRV Screen -->
+        <div id="hrv" class="screen" role="region" aria-label="HRV Analizi">
+            <div class="header header-green">
+                <div class="header-title"><i class="ph ph-heartbeat"></i> HRV Analizi</div>
+                <div class="header-subtitle">Kalp atış hızı değişkenliği</div>
+            </div>
+
+            <div class="measurement-area">
+                <div class="camera-placeholder" id="camera-placeholder" aria-label="Kamera alanı">
+                    <i class="ph ph-camera" style="font-size: 40px; margin-bottom: 10px;"></i>
+                    <div style="font-size: 12px; font-weight: 600;">Parmağınızı<br>Kameraya Koyun</div>
+                </div>
+                <div class="progress-container" role="progressbar">
+                    <div class="progress-fill" id="hrv-progress"></div>
+                </div>
+                <div class="progress-text" id="hrv-status">Ölçüme hazır</div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stat-item">
+                    <div class="stat-label">Kalp Atışı</div>
+                    <div class="stat-value" id="bpm-value">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Koherans</div>
+                    <div class="stat-value" id="coherence-value">--</div>
+                </div>
+            </div>
+
+            <div id="hrv-result-container" style="display: none; margin: 0 24px 24px;">
+                <div class="card" style="margin: 0; border: 2px solid transparent;" id="hrv-result-card">
+                    <div class="card-title" style="justify-content: center;" id="hrv-result-title">Analiz Tamamlandı
+                    </div>
+                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 15px;" id="hrv-result-desc">
+                        Sonuç hesaplanıyor...</p>
+                    <button class="btn-primary" id="hrv-action-btn" style="width: 100%; margin: 0;">Tamam</button>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="start-hrv-btn" onclick="startHRV()">Ölçümü Başlat</button>
+
+            <div class="section">
+                <div class="section-title">Son Ölçümler</div>
+            </div>
+            <div class="card" style="padding: 0; margin-bottom: 100px;" id="hrv-history-list">
+                <div class="setting-item">
+                    <div class="setting-content">
+                        <div class="stat-label">Henüz ölçüm yok</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Breathing Screen -->
+        <div id="breathing" class="screen" role="region" aria-label="Nefes Egzersizi">
+            <div class="header header-blue" style="padding-bottom: 60px;">
+                <div class="header-title">Nefes Egzersizi</div>
+                <div class="header-subtitle">4-2-4 Tekniği · Zihni sakinleştir</div>
+            </div>
+            <div class="breathing-container" style="margin-top: -40px;">
+                <div class="breathing-circle" id="breathing-circle" aria-live="polite">
+                    <div class="breathing-text" id="breathing-text">HAZIR</div>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="toggleBreathing()" id="breathing-btn"
+                style="margin-bottom: 100px;">Başlat</button>
+        </div>
+
+        <!-- Emotion Screen -->
+        <div id="emotion" class="screen" role="region" aria-label="Duygu Günlüğü">
+            <div class="header header-purple">
+                <div class="header-title">Duygu Günlüğü</div>
+                <div class="header-subtitle">Duygularını fark et ve kaydet</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title" style="margin-bottom: 15px;">Şu an ne hissediyorsun?</div>
+                <div class="emotion-grid" role="radiogroup" aria-label="Duygu Seçimi">
+                    <button class="emotion-button" onclick="selectEmotion(this, 'Mutlu')" role="radio"
+                        aria-checked="false">
+                        <div class="emotion-emoji">😊</div>
+                        <div class="emotion-label">Mutlu</div>
+                    </button>
+                    <button class="emotion-button" onclick="selectEmotion(this, 'Heyecanlı')" role="radio"
+                        aria-checked="false">
+                        <div class="emotion-emoji">🤩</div>
+                        <div class="emotion-label">Heyecanlı</div>
+                    </button>
+                    <button class="emotion-button" onclick="selectEmotion(this, 'Sakin')" role="radio"
+                        aria-checked="false">
+                        <div class="emotion-emoji">😌</div>
+                        <div class="emotion-label">Sakin</div>
+                    </button>
+                    <button class="emotion-button" onclick="selectEmotion(this, 'Yorgun')" role="radio"
+                        aria-checked="false">
+                        <div class="emotion-emoji">😴</div>
+                        <div class="emotion-label">Yorgun</div>
+                    </button>
+                    <button class="emotion-button" onclick="selectEmotion(this, 'Kaygılı')" role="radio"
+                        aria-checked="false">
+                        <div class="emotion-emoji">😰</div>
+                        <div class="emotion-label">Kaygılı</div>
+                    </button>
+                    <button class="emotion-button" onclick="selectEmotion(this, 'Üzgün')" role="radio"
+                        aria-checked="false">
+                        <div class="emotion-emoji">😢</div>
+                        <div class="emotion-label">Üzgün</div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Yoğunluk</div>
+                <div class="slider-container">
+                    <input type="range" min="1" max="10" value="5" class="slider" aria-label="Duygu Yoğunluğu">
+                    <div
+                        style="display: flex; justify-content: space-between; margin-top: 10px; color: var(--text-muted); font-size: 12px;">
+                        <span>Hafif</span><span>Orta</span><span>Yoğun</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fuzzy Logic Feedback -->
+            <div id="emotion-feedback" class="card"
+                style="display:none; margin:0 24px 16px; border-left: 4px solid var(--primary); animation: slideUp 0.4s ease-out;">
+            </div>
+
+            <button class="btn-primary" style="background: var(--primary-dark)" onclick="saveEmotion()">Kaydet</button>
+
+            <div class="section">
+                <div class="section-title">Geçmiş Kayıtlar</div>
+            </div>
+            <div class="card" style="padding: 0; margin-bottom: 100px;" id="emotion-history-list">
+                <div class="setting-item">
+                    <div class="setting-content">
+                        <div class="stat-label">Henüz kayıt yok</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decision Support Screen -->
+        <div id="decision" class="screen" role="region" aria-label="Karar Desteği">
+            <div class="header header-orange">
+                <div class="header-title"><i class="ph ph-scales"></i> Karar Desteği</div>
+                <div class="header-subtitle">Duygu Kontrolü + Fuzzy Analiz</div>
+            </div>
+            <div class="decision-wizard">
+                <div class="decision-step" id="step-emotion">
+                    <div class="step-title">Yargıç D: Duygu Durumu</div>
+                    <div class="step-description">Karar verirken hangi duygunun etkisinde olduğunu tespit et.</div>
+                    <div class="judge-card">
+                        <button class="option-btn" onclick="finishDecision('fear')">
+                            <i class="ph ph-warning-circle"></i>
+                            <div>
+                                <div style="font-weight:600">Korku</div>
+                                <div style="font-size:12px;opacity:0.7">Kaybetme endişesi</div>
+                            </div>
+                        </button>
+                        <button class="option-btn" onclick="finishDecision('desire')">
+                            <i class="ph ph-heart"></i>
+                            <div>
+                                <div style="font-weight:600">İstek</div>
+                                <div style="font-size:12px;opacity:0.7">Kazanma heyecanı</div>
+                            </div>
+                        </button>
+                        <button class="option-btn" onclick="finishDecision('calm')">
+                            <i class="ph ph-moon"></i>
+                            <div>
+                                <div style="font-weight:600">Sakin</div>
+                                <div style="font-size:12px;opacity:0.7">Nötr zihin hali</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <div class="decision-step" id="decision-result" style="display: none;">
+                    <div style="text-align:center;font-size:48px;margin-bottom:20px" id="result-icon">✨</div>
+                    <div style="font-size:24px;font-weight:700;text-align:center;margin-bottom:20px" id="result-title">
+                        Analiz Sonucu</div>
+                    <div id="result-text" style="line-height: 1.6;"></div>
+                    <button class="btn-primary" onclick="resetDecision()" style="margin-top:30px;width:100%">Yeni
+                        Kontrol</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Neutral Mind Protocol Screen -->
+        <div id="neutral" class="screen" role="region" aria-label="Nötr-Zihin AI">
+            <div class="header" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white;">
+                <div class="header-title"><i class="ph ph-brain"></i> Nötr-Zihin AI</div>
+                <div class="header-subtitle">Bulanık Mantık + Yapay Sinir Ağı</div>
+            </div>
+
+            <!-- Phase 1: AI Chat Calibration -->
+            <div id="neutral-phase-1" class="neutral-phase">
+                <div class="chat-container" id="ai-chat-container">
+                    <div class="chat-message ai">Merhaba. Ben Nötr-Zihin asistanın. Senin "Nötr" halini tanımlamak için
+                        birkaç veriye ihtiyacım var. Hazır mısın?</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="ai-chat-input" placeholder="Cevabını yaz..."
+                        onkeypress="handleChatKey(event)" aria-label="Mesaj girişi">
+                    <button class="btn-icon" onclick="sendUserMessage()" aria-label="Gönder"><i
+                            class="ph ph-paper-plane-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Phase 2: Neural Network Scan -->
+            <div id="neutral-phase-2" class="neutral-phase" style="display: none;">
+                <div class="scan-container">
+                    <div class="neural-network-viz" id="ann-viz" aria-label="Nöral ağ görselleştirmesi"></div>
+                    <div class="scan-status" id="scan-status">Veri Toplanıyor...</div>
+                    <div class="scan-metrics">
+                        <div class="metric-item"><i class="ph ph-eye"></i><span id="metric-visual">--</span></div>
+                        <div class="metric-item"><i class="ph ph-wave-sine"></i><span id="metric-audio">--</span></div>
+                        <div class="metric-item"><i class="ph ph-heartbeat"></i><span id="metric-haptic">--</span></div>
+                    </div>
+                    <button class="btn-primary" id="analysis-btn" style="display:none;margin-top:20px"
+                        onclick="showNeutralPhase(3)">Analiz Sonuçlarını Gör</button>
+                </div>
+            </div>
+
+            <!-- Phase 3: Neural Analysis Results -->
+            <div id="neutral-phase-3" class="neutral-phase" style="display: none;">
+                <div style="padding:20px;overflow-y:auto;flex:1;">
+                    <div class="card" style="border-left:4px solid var(--primary);margin:0 0 16px;">
+                        <div class="card-title"><i class="ph ph-graph" style="color:var(--primary)"></i> Nöral Analiz
+                            Sonuçları</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div style="text-align:center">
+                                <div style="font-size:12px;color:var(--text-muted)">Duygusal Durum</div>
+                                <div style="font-size:18px;font-weight:700" id="p3-emotional-state">—</div>
+                            </div>
+                            <div style="text-align:center">
+                                <div style="font-size:12px;color:var(--text-muted)">Güven Oranı</div>
+                                <div style="font-size:18px;font-weight:700;color:var(--primary)" id="p3-confidence">—
+                                </div>
+                            </div>
+                            <div style="text-align:center">
+                                <div style="font-size:12px;color:var(--text-muted)">Koherans</div>
+                                <div style="font-size:18px;font-weight:700;color:var(--success)" id="p3-coherence">—
+                                </div>
+                            </div>
+                            <div style="text-align:center">
+                                <div style="font-size:12px;color:var(--text-muted)">Stres Seviyesi</div>
+                                <div style="font-size:18px;font-weight:700" id="p3-stress-level">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin:0 0 16px;text-align:center;">
+                        <div class="card-title" style="justify-content:center"><i class="ph ph-chart-polar"
+                                style="color:var(--primary)"></i> Duygu Radarı</div>
+                        <canvas id="p3-radar-chart" style="width:260px;height:260px;margin:0 auto;"
+                            aria-label="Duygu radar grafiği"></canvas>
+                    </div>
+
+                    <div class="card" style="margin:0 0 16px;border-left:4px solid var(--warning);">
+                        <div class="card-title"><i class="ph ph-lightning" style="color:var(--warning)"></i>
+                            Tetikleyiciler</div>
+                        <div style="font-size:14px;color:var(--text-main);line-height:1.6" id="p3-triggers">—</div>
+                    </div>
+
+                    <div class="card" style="margin:0 0 16px;border-left:4px solid var(--success);">
+                        <div class="card-title"><i class="ph ph-prescription" style="color:var(--success)"></i> Öneri
+                        </div>
+                        <div style="font-size:14px;color:var(--text-main);line-height:1.6" id="p3-recommendation">—
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="startHypnosis()"
+                        style="width:100%;margin:0 0 12px;background:linear-gradient(135deg,#1e293b,#0f172a);">
+                        <i class="ph ph-spiral"></i> Hipnoz Protokolünü Başlat
+                    </button>
+                    <button class="btn-primary" onclick="switchScreen('dashboard')"
+                        style="width:100%;margin:0;background:var(--text-muted);">
+                        Ana Sayfaya Dön
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phase 4: Hypnosis Intervention -->
+            <div id="neutral-phase-4" class="neutral-phase"
+                style="display:none;height:100vh;position:fixed;top:0;left:0;width:100%;z-index:2000;background:black;">
+                <canvas id="hypnosis-canvas" style="width:100%;height:100%;"></canvas>
+                <div class="hypnosis-overlay">
+                    <div class="hypnosis-text" id="hypnosis-text">Derinleş...</div>
+                    <div class="hypnosis-controls">
+                        <button class="btn-icon-large" onclick="stopProtocol()" aria-label="Protokolü Durdur"><i
+                                class="ph ph-x"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insight Screen -->
+        <div id="insight" class="screen" role="region" aria-label="İçgörüler">
+            <div class="header" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
+                <div class="header-title"><i class="ph ph-lightbulb"></i> İçgörüler</div>
+                <div class="header-subtitle">AI destekli analizler ve öneriler</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Haftalık Özet</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="ph ph-trend-up" style="color: var(--success)"></i> İlerleme Raporu
+                </div>
+                <div style="display:flex;gap:15px;align-items:center;margin-bottom:15px;">
+                    <div style="flex:1;">
+                        <div style="font-size:12px;color:var(--text-muted)">Ortalama Koherans</div>
+                        <div style="font-size:24px;font-weight:700;color:var(--primary)" id="insight-avg-coherence">—
+                        </div>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:12px;color:var(--text-muted)">Duygu Durumu</div>
+                        <div style="font-size:24px;font-weight:700;color:var(--success)" id="insight-mood-status">—
+                        </div>
+                    </div>
+                </div>
+                <div style="font-size:14px;color:var(--text-main);line-height:1.5" id="insight-summary-text">
+                    Veri toplanıyor...
+                </div>
+            </div>
+
+            <div class="card" style="padding:16px;">
+                <div class="card-title"><i class="ph ph-chart-line" style="color:var(--primary)"></i> Koherans Trendi
+                </div>
+                <canvas id="insight-chart" style="width:100%;height:120px;"
+                    aria-label="Koherans trend grafiği"></canvas>
+            </div>
+
+            <div class="stats-card">
+                <div class="stat-item">
+                    <div class="stat-value" id="insight-exercise-count">0</div>
+                    <div class="stat-label">Nefes Egzersizi</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="insight-emotion-count">0</div>
+                    <div class="stat-label">Duygu Kaydı</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Öneriler</div>
+            </div>
+            <div class="card" style="padding: 0; margin-bottom: 100px;">
+                <div class="setting-item">
+                    <div class="setting-icon" style="background:#eff6ff;color:var(--info)"><i
+                            class="ph ph-moon-stars"></i></div>
+                    <div class="setting-content">
+                        <div class="setting-title">Uyku Düzeni</div>
+                        <div style="font-size:12px;color:var(--text-muted)">Daha iyi HRV için 23:00'ten önce uyu.</div>
+                    </div>
+                    <i class="ph ph-caret-right setting-arrow"></i>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-icon" style="background:#ecfdf5;color:var(--success)"><i class="ph ph-tree"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Doğa Yürüyüşü</div>
+                        <div style="font-size:12px;color:var(--text-muted)">Günde 15 dk açık hava koheransı artırır.
+                        </div>
+                    </div>
+                    <i class="ph ph-caret-right setting-arrow"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div id="profile" class="screen" role="region" aria-label="Profil">
+            <div class="profile-header">
+                <div class="avatar-container"><i class="ph ph-user" style="font-size:48px;color:white;"></i></div>
+                <div style="text-align:center;color:white;">
+                    <div style="font-size:24px;font-weight:700" id="profile-name">Fatma Yılmaz</div>
+                    <div style="opacity:0.8;">Premium Üye</div>
+                </div>
+            </div>
+
+            <div class="settings-list">
+                <div class="setting-item" onclick="toggleNotifications()">
+                    <div class="setting-icon"><i class="ph ph-bell"></i></div>
+                    <div class="setting-content">
+                        <div class="setting-title">Bildirimler</div>
+                    </div>
+                    <div style="font-size:14px;color:var(--text-muted);margin-right:8px" id="notif-status">Açık</div>
+                    <i class="ph ph-caret-right setting-arrow"></i>
+                </div>
+                <div class="setting-item" onclick="toggleDarkMode()">
+                    <div class="setting-icon"><i class="ph ph-moon"></i></div>
+                    <div class="setting-content">
+                        <div class="setting-title">Tema</div>
+                    </div>
+                    <div style="font-size:14px;color:var(--text-muted);margin-right:8px" id="theme-status">Açık</div>
+                    <i class="ph ph-caret-right setting-arrow"></i>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-icon"><i class="ph ph-globe"></i></div>
+                    <div class="setting-content">
+                        <div class="setting-title">Dil Seçeneği</div>
+                    </div>
+                    <div style="font-size:14px;color:var(--text-muted);margin-right:8px">Türkçe</div>
+                    <i class="ph ph-caret-right setting-arrow"></i>
+                </div>
+                <div class="setting-item" onclick="exportData()">
+                    <div class="setting-icon" style="background:#eff6ff;color:var(--info)"><i
+                            class="ph ph-download-simple"></i></div>
+                    <div class="setting-content">
+                        <div class="setting-title">Verileri Dışa Aktar</div>
+                        <div style="font-size:12px;color:var(--text-muted)">JSON formatında indir</div>
+                    </div>
+                    <i class="ph ph-caret-right setting-arrow"></i>
+                </div>
+            </div>
+
+            <div class="section" style="margin-top: 30px; margin-bottom: 100px;">
+                <div class="setting-item" style="border-radius:20px;border:none;color:var(--danger)"
+                    onclick="clearData()">
+                    <div class="setting-icon" style="background:#fef2f2;color:var(--danger)"><i class="ph ph-trash"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title" style="color:var(--danger)">Tüm Verileri Sil</div>
+                    </div>
+                </div>
+                <div class="setting-item" style="border-radius:20px;border:none;color:var(--danger);margin-top:8px">
+                    <div class="setting-icon" style="background:#fef2f2;color:var(--danger)"><i
+                            class="ph ph-sign-out"></i></div>
+                    <div class="setting-content">
+                        <div class="setting-title" style="color:var(--danger)">Çıkış Yap</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" role="tablist" aria-label="Ana Navigasyon">
+            <button class="nav-item active" data-screen="dashboard" onclick="switchScreen('dashboard')" role="tab"
+                aria-selected="true">
+                <div class="nav-icon"><i class="ph ph-house"></i></div>
+                <div class="nav-label">Ana Sayfa</div>
+            </button>
+            <button class="nav-item" data-screen="hrv" onclick="switchScreen('hrv')" role="tab" aria-selected="false">
+                <div class="nav-icon"><i class="ph ph-heart-beat"></i></div>
+                <div class="nav-label">HRV</div>
+            </button>
+            <button class="nav-item" data-screen="breathing" onclick="switchScreen('breathing')" role="tab"
+                aria-selected="false">
+                <div class="nav-icon"><i class="ph ph-wind"></i></div>
+                <div class="nav-label">Nefes</div>
+            </button>
+            <button class="nav-item" data-screen="insight" onclick="switchScreen('insight')" role="tab"
+                aria-selected="false">
+                <div class="nav-icon"><i class="ph ph-lightbulb"></i></div>
+                <div class="nav-label">İçgörü</div>
+            </button>
+            <button class="nav-item" data-screen="neutral" onclick="switchScreen('neutral')" role="tab"
+                aria-selected="false">
+                <div class="nav-icon"><i class="ph ph-brain"></i></div>
+                <div class="nav-label">AI</div>
+            </button>
+            <button class="nav-item" data-screen="profile" onclick="switchScreen('profile')" role="tab"
+                aria-selected="false">
+                <div class="nav-icon"><i class="ph ph-user"></i></div>
+                <div class="nav-label">Profil</div>
+            </button>
+        </nav>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
