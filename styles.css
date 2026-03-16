@@ -686,6 +686,10 @@ input[type=range]::-webkit-slider-runnable-track {
 /* Decision Wizard */
 .decision-wizard { padding: 20px; }
 
+.decision-wizard .slider-container { margin: 10px 0 20px; padding: 0; }
+.decision-wizard select { cursor: pointer; }
+.decision-wizard select:focus { border-color: var(--primary); }
+
 .step-title {
     font-size: 20px;
     font-weight: 700;
