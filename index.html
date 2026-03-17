@@ -303,12 +303,20 @@
 
                     <button class="btn-primary" style="width: 100%; margin: 0; margin-bottom: 20px;" onclick="calculateEmotionBalance()">Analiz Et & Müdahale</button>
 
-                    <div id="emotion-balance-result" style="display: none; animation: slideUp 0.4s ease-out;">
-                        <div class="card" style="margin: 0; border-left: 4px solid var(--primary);">
-                            <div class="card-title" style="margin-bottom: 10px;"><i class="ph ph-lightning" style="color:var(--primary)"></i> ADIM 3: Müdahale</div>
-                            <div style="margin-bottom: 15px; font-size: 14px;">Mevcut durumun ile hedefin arasındaki <strong>Hata Payı: <span id="error-margin" style="color: var(--danger); font-weight: bold;"></span></strong></div>
-                            <div style="font-weight: 600; margin-bottom: 5px; color: var(--text-main);">Önerilen Basit Eylem:</div>
-                            <div id="balance-recommendation" style="font-size: 14px; color: var(--text-muted); line-height: 1.6; padding: 10px; background: #f8fafc; border-radius: 12px;"></div>
+                    <div id="emotion-balance-result" style="display: none; animation: slideUp 0.4s ease-out; margin-bottom: 40px;">
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <span style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Sistem Analizi</span>
+                        </div>
+                        <div class="chat-container" style="padding: 0; overflow-y: visible;">
+                            <div class="chat-message ai" style="border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm);">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 8px;">
+                                    <i class="ph ph-robot" style="font-size: 20px; color: var(--primary);"></i>
+                                    <span style="font-weight: 600; font-size: 14px; color: var(--text-main);">Nötr-Zihin Asistanı</span>
+                                </div>
+                                <div style="margin-bottom: 10px; font-size: 14px; color: var(--text-main);">Hedef ile mevcut durumun arasındaki <strong>Hata Payı: <span id="error-margin" style="color: var(--danger);"></span></strong> tespit edildi.</div>
+                                <div style="font-weight: 600; font-size: 12px; color: var(--primary); margin-bottom: 4px;">ÖNERİLEN MÜDAHALE:</div>
+                                <div id="balance-recommendation" style="font-size: 15px; color: var(--text-main); line-height: 1.5;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
