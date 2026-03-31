@@ -598,6 +598,55 @@ function resetDecision() {
     document.getElementById('step-emotion').style.display = 'block';
 }
 
+function showDecisionTab(tab) {
+    if (tab === 'wizard') {
+        document.getElementById('tab-wizard').style.display = 'block';
+        document.getElementById('tab-balance').style.display = 'none';
+        document.getElementById('btn-tab-wizard').style.background = 'var(--primary)';
+        document.getElementById('btn-tab-wizard').style.color = 'white';
+        document.getElementById('btn-tab-balance').style.background = 'var(--text-muted)';
+        document.getElementById('btn-tab-balance').style.color = 'white';
+    } else {
+        document.getElementById('tab-wizard').style.display = 'none';
+        document.getElementById('tab-balance').style.display = 'block';
+        document.getElementById('btn-tab-balance').style.background = 'var(--primary)';
+        document.getElementById('btn-tab-balance').style.color = 'white';
+        document.getElementById('btn-tab-wizard').style.background = 'var(--text-muted)';
+        document.getElementById('btn-tab-wizard').style.color = 'white';
+    }
+}
+
+function calculateEmotionBalance() {
+    const currentState = parseInt(document.getElementById('current-state-slider').value);
+    const targetState = parseInt(document.getElementById('target-state-slider').value);
+    const source = document.getElementById('imbalance-source').value;
+
+    let hataPayi = targetState - currentState;
+    if (hataPayi < 0) hataPayi = 0; // if current is better than target, no error margin
+
+    document.getElementById('error-margin').textContent = `%${hataPayi}`;
+
+    let recommendation = "";
+
+    switch(source) {
+        case "biyoloji":
+            recommendation = "Telefonu bırak, 15 dakika yürüyüş yap veya erken uyu. Fiziksel enerji dengelenmeden diğer sistemler çalışamaz.";
+            break;
+        case "bilis":
+            recommendation = "\"Bu düşünce kesinlikle doğru mu?\" diye sor. Kendine kanıt ara ve zihnindeki bu felaket senaryosuna karşı tek bir olumlu alternatif yaz.";
+            break;
+        case "cevre":
+            recommendation = "Sınır koy. Yapamayacağın işe hayır de veya güvendiğin bir kişiye kısa bir mesaj atıp sosyal destek al.";
+            break;
+        case "anlam":
+            recommendation = "Büyük hedefleri bir kenara bırak. Değerlerine uygun olan en küçük, en basit işi şu an, hemen yap.";
+            break;
+    }
+
+    document.getElementById('balance-recommendation').textContent = recommendation;
+    document.getElementById('emotion-balance-result').style.display = 'block';
+}
+
 // ===================== NEUTRAL MIND PROTOCOL =====================
 let neutralState = { phase: 1, calibrated: false, triggers: [], safePlace: '', hypnosisActive: false };
 let hypnosisReq, hypnosisIntervals = [];

@@ -233,6 +233,13 @@
                 <div class="header-subtitle">Duygu Kontrolü + Fuzzy Analiz</div>
             </div>
             <div class="decision-wizard">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <button class="btn-small" style="flex:1; margin-right: 10px;" id="btn-tab-wizard" onclick="showDecisionTab('wizard')">Karar Sihirbazı</button>
+                    <button class="btn-small" style="flex:1; background: var(--text-muted);" id="btn-tab-balance" onclick="showDecisionTab('balance')">Duygu Dengesi</button>
+                </div>
+
+                <!-- Tab 1: Decision Wizard -->
+                <div id="tab-wizard">
                 <div class="decision-step" id="step-emotion">
                     <div class="step-title">Yargıç D: Duygu Durumu</div>
                     <div class="step-description">Karar verirken hangi duygunun etkisinde olduğunu tespit et.</div>
@@ -268,6 +275,52 @@
                     <button class="btn-primary" onclick="resetDecision()" style="margin-top:30px;width:100%">Yeni
                         Kontrol</button>
                 </div>
+                </div>
+
+                <!-- Tab 2: Emotion Balance -->
+                <div id="tab-balance" style="display: none;">
+                    <div class="section-title" style="margin-bottom: 5px;">ADIM 1: Ölçüm</div>
+                    <div class="step-description">Şu an genel olarak % kaç iyi hissediyorsun?</div>
+                    <div class="slider-container" style="margin-top: 10px; margin-bottom: 20px; padding: 0;">
+                        <input type="range" id="current-state-slider" min="0" max="100" value="60" class="slider" oninput="document.getElementById('current-val').textContent = this.value + '%'">
+                        <div style="text-align: center; font-weight: bold; margin-top: 10px;" id="current-val">60%</div>
+                    </div>
+
+                    <div class="section-title" style="margin-bottom: 5px;">ADIM 2: Hata Tespiti</div>
+                    <div class="step-description">Hedeflediğin ideal denge ne?</div>
+                    <div class="slider-container" style="margin-top: 10px; margin-bottom: 20px; padding: 0;">
+                        <input type="range" id="target-state-slider" min="0" max="100" value="85" class="slider" oninput="document.getElementById('target-val').textContent = this.value + '%'">
+                        <div style="text-align: center; font-weight: bold; margin-top: 10px;" id="target-val">85%</div>
+                    </div>
+
+                    <div class="step-description" style="margin-top: 10px;">Farkın temel sebebi hangi bileşen?</div>
+                    <select id="imbalance-source" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); font-family: 'Outfit', sans-serif; font-size: 16px; margin-bottom: 20px; outline: none;">
+                        <option value="biyoloji">Biyoloji (Vücut Durumu: Uyku, Beslenme, Yorgunluk)</option>
+                        <option value="bilis">Biliş (Zihin Çerçevesi: Negatif düşünce, Felaket tellallığı)</option>
+                        <option value="cevre">Çevre (Dış Baskı: İş yükü, Sosyal stres)</option>
+                        <option value="anlam">Anlam (Amaç: Motivasyon eksikliği, Yönsüzlük)</option>
+                    </select>
+
+                    <button class="btn-primary" style="width: 100%; margin: 0; margin-bottom: 20px;" onclick="calculateEmotionBalance()">Analiz Et & Müdahale</button>
+
+                    <div id="emotion-balance-result" style="display: none; animation: slideUp 0.4s ease-out; margin-bottom: 40px;">
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <span style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Sistem Analizi</span>
+                        </div>
+                        <div class="chat-container" style="padding: 0; overflow-y: visible;">
+                            <div class="chat-message ai" style="border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm);">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 8px;">
+                                    <i class="ph ph-robot" style="font-size: 20px; color: var(--primary);"></i>
+                                    <span style="font-weight: 600; font-size: 14px; color: var(--text-main);">Nötr-Zihin Asistanı</span>
+                                </div>
+                                <div style="margin-bottom: 10px; font-size: 14px; color: var(--text-main);">Hedef ile mevcut durumun arasındaki <strong>Hata Payı: <span id="error-margin" style="color: var(--danger);"></span></strong> tespit edildi.</div>
+                                <div style="font-weight: 600; font-size: 12px; color: var(--primary); margin-bottom: 4px;">ÖNERİLEN MÜDAHALE:</div>
+                                <div id="balance-recommendation" style="font-size: 15px; color: var(--text-main); line-height: 1.5;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
